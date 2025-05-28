@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, CheckCircle, Clock, Crown, Sparkles } from 'lucide-react';
+import { ideasService } from '../services/ideasService';
 
 const FlowGuide = () => {
   const location = useLocation();
@@ -13,7 +14,7 @@ const FlowGuide = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState(null);
 
-  const { idea, dept, category } = location.state || {};
+  const { idea, ideaId, dept, category, title, technologies } = location.state || {};
 
   useEffect(() => {
     if (!idea) {
@@ -33,9 +34,21 @@ const FlowGuide = () => {
     setIsGenerating(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const sampleGuide = `
+      let guide = '';
+      
+      if (ideaId) {
+        // Get the detailed development guide from the database
+        const projectIdea = ideasService.getIdeaById(ideaId);
+        if (projectIdea) {
+          guide = ideasService.generateDevelopmentGuide(projectIdea);
+        }
+      }
+      
+      // Fallback to a generic guide if no specific guide found
+      if (!guide) {
+        guide = `
 ## Project Development Roadmap
 
 ### Phase 1: Research & Planning (Week 1-2)
@@ -88,8 +101,9 @@ const FlowGuide = () => {
 - **Version Control**: Git with GitHub/GitLab
 - **Deployment**: AWS, Heroku, or Vercel
 `;
+      }
 
-      setFlowGuide(sampleGuide);
+      setFlowGuide(guide);
       
       // Update user's guide usage
       if (user) {
@@ -152,10 +166,16 @@ const FlowGuide = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">{idea}</p>
-              <div className="flex space-x-2 mt-4">
+              {title && <h3 className="font-semibold text-lg mb-2 text-purple-900">{title}</h3>}
+              <p className="text-gray-700 mb-4">{idea}</p>
+              <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">{dept}</Badge>
                 <Badge variant="outline">{category}</Badge>
+                {technologies && technologies.map((tech, index) => (
+                  <Badge key={index} variant="outline" className="bg-blue-100 text-blue-700">
+                    {tech}
+                  </Badge>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -197,7 +217,13 @@ const FlowGuide = () => {
                   </div>
                   <div className="mt-8 flex space-x-4">
                     <Button 
-                      onClick={() => navigate('/mvp-generator', { state: { idea } })}
+                      onClick={() => navigate('/mvp-generator', { 
+                        state: { 
+                          idea, 
+                          ideaId, 
+                          title 
+                        } 
+                      })}
                       disabled={!user?.is_paid}
                       className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                     >

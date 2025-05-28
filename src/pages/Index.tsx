@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Rocket, Crown, ArrowRight, Zap, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ideasService, ProjectIdea } from '../services/ideasService';
 
 const departments = [
   { value: 'cse', label: 'Computer Science & Engineering' },
@@ -30,7 +30,7 @@ const categories = [
 const Index = () => {
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [generatedIdea, setGeneratedIdea] = useState('');
+  const [generatedIdea, setGeneratedIdea] = useState<ProjectIdea | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -48,18 +48,11 @@ const Index = () => {
     
     setIsGenerating(true);
     try {
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate API delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const sampleIdeas = [
-        "Smart Campus Navigation System with AR - Develop an augmented reality-based indoor navigation system for college campuses using computer vision and mobile sensors.",
-        "AI-Powered Code Review Assistant - Create an intelligent code review system that uses machine learning to detect bugs, suggest optimizations, and enforce coding standards.",
-        "Blockchain-Based Student Credential Verification - Build a decentralized system for issuing and verifying academic certificates using blockchain technology.",
-        "IoT-Based Smart Agriculture Monitoring - Design an intelligent farming system using sensors, drones, and ML algorithms to optimize crop yield and resource usage."
-      ];
-      
-      const randomIdea = sampleIdeas[Math.floor(Math.random() * sampleIdeas.length)];
-      setGeneratedIdea(randomIdea);
+      const idea = ideasService.getRandomIdea(selectedDept, selectedCategory);
+      setGeneratedIdea(idea);
     } catch (error) {
       console.error('Error generating idea:', error);
     }
@@ -83,7 +76,16 @@ const Index = () => {
       return;
     }
 
-    navigate('/flow-guide', { state: { idea: generatedIdea, dept: selectedDept, category: selectedCategory } });
+    navigate('/flow-guide', { 
+      state: { 
+        idea: generatedIdea?.description, 
+        ideaId: generatedIdea?.id,
+        dept: selectedDept, 
+        category: selectedCategory,
+        title: generatedIdea?.title,
+        technologies: generatedIdea?.technologies
+      } 
+    });
   };
 
   return (
@@ -217,8 +219,25 @@ const Index = () => {
 
                 {generatedIdea && (
                   <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border">
-                    <h3 className="font-semibold mb-3 text-lg">Your Project Idea:</h3>
-                    <p className="text-gray-700 leading-relaxed mb-4">{generatedIdea}</p>
+                    <h3 className="font-semibold mb-2 text-lg text-purple-900">{generatedIdea.title}</h3>
+                    <p className="text-gray-700 leading-relaxed mb-4">{generatedIdea.description}</p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <Badge variant="outline" className="bg-green-100 text-green-700">
+                        {generatedIdea.difficulty}
+                      </Badge>
+                      {generatedIdea.technologies.slice(0, 3).map((tech, index) => (
+                        <Badge key={index} variant="outline" className="bg-blue-100 text-blue-700">
+                          {tech}
+                        </Badge>
+                      ))}
+                      {generatedIdea.technologies.length > 3 && (
+                        <Badge variant="outline" className="bg-gray-100 text-gray-700">
+                          +{generatedIdea.technologies.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+
                     <div className="flex space-x-3">
                       <Button onClick={handleGetFlowGuide} className="flex items-center">
                         Get Development Guide
@@ -226,7 +245,13 @@ const Index = () => {
                       </Button>
                       <Button 
                         variant="outline" 
-                        onClick={() => navigate('/mvp-generator', { state: { idea: generatedIdea } })}
+                        onClick={() => navigate('/mvp-generator', { 
+                          state: { 
+                            idea: generatedIdea.description,
+                            ideaId: generatedIdea.id,
+                            title: generatedIdea.title
+                          } 
+                        })}
                         disabled={!user?.is_paid}
                       >
                         <Crown className="w-4 h-4 mr-2" />

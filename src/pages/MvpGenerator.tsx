@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Crown, Rocket, Code, Database, Palette, Lock } from 'lucide-react';
+import { ideasService } from '../services/ideasService';
 
 const MvpGenerator = () => {
   const location = useLocation();
@@ -13,7 +13,7 @@ const MvpGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState(null);
 
-  const { idea } = location.state || {};
+  const { idea, ideaId, title } = location.state || {};
 
   useEffect(() => {
     const userData = localStorage.getItem('aiProjectUser');
@@ -38,9 +38,21 @@ const MvpGenerator = () => {
     setIsGenerating(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 2500));
       
-      const sampleMvpPlan = `
+      let plan = '';
+      
+      if (ideaId) {
+        // Get the detailed MVP plan from the database
+        const projectIdea = ideasService.getIdeaById(ideaId);
+        if (projectIdea) {
+          plan = ideasService.generateMvpPlan(projectIdea);
+        }
+      }
+      
+      // Fallback to a generic MVP plan if no specific plan found
+      if (!plan) {
+        plan = `
 ## MVP Development Plan
 
 ### Core Features (Must-Have)
@@ -133,42 +145,6 @@ Frontend (React) ↔ REST API ↔ Database
 - **Accessibility**: WCAG 2.1 AA compliance
 - **Mobile-First**: Responsive design approach
 
-### Database Schema (Simplified)
-
-\`\`\`sql
--- Users table
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  email VARCHAR(255) UNIQUE,
-  password_hash VARCHAR(255),
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Main entity table (customize based on your project)
-CREATE TABLE projects (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
-  title VARCHAR(255),
-  description TEXT,
-  status VARCHAR(50),
-  created_at TIMESTAMP DEFAULT NOW()
-);
-\`\`\`
-
-### API Endpoints
-
-\`\`\`
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/profile
-
-GET    /api/projects
-POST   /api/projects
-GET    /api/projects/:id
-PUT    /api/projects/:id
-DELETE /api/projects/:id
-\`\`\`
-
 ### Security Considerations
 - Input validation and sanitization
 - Rate limiting for API endpoints
@@ -198,8 +174,9 @@ DELETE /api/projects/:id
 4. Feature prioritization
 5. Scaling considerations
 `;
+      }
 
-      setMvpPlan(sampleMvpPlan);
+      setMvpPlan(plan);
     } catch (error) {
       console.error('Error generating MVP plan:', error);
     }
@@ -283,6 +260,7 @@ DELETE /api/projects/:id
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {title && <h3 className="font-semibold text-lg mb-2 text-purple-900">{title}</h3>}
               <p className="text-gray-700">{idea}</p>
             </CardContent>
           </Card>
