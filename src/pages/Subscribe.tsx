@@ -9,17 +9,18 @@ import { ArrowLeft, Crown, CheckCircle, Smartphone, CreditCard, Copy, Check } fr
 
 const Subscribe = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const upiId = 'projectai@okhdfcbank';
+  const upiId = 'kshorts805@oksbi';
   const amount = '99';
-  const description = 'AI Project Generator Pro Access';
+  const description = 'AI Project Access';
+  const upiDeepLink = `intent://pay?pa=${upiId}&pn=${encodeURIComponent(description)}&mc=0000&mode=02&purpose=00&am=${amount}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end;`;
 
   const handlePayWithGPay = () => {
-    const upiUrl = `upi://pay?pa=${upiId}&pn=AI%20Project%20Generator&am=${amount}&cu=INR&tn=${encodeURIComponent(description)}`;
-    window.open(upiUrl, '_blank');
+    window.open(upiDeepLink, '_blank');
   };
 
   const copyUpiId = () => {
@@ -29,25 +30,43 @@ const Subscribe = () => {
   };
 
   const handleVerifyPayment = async () => {
-    if (!transactionId.trim()) return;
+    if (!email.trim() || !transactionId.trim()) {
+      alert('Please enter both email and transaction ID');
+      return;
+    }
 
     setIsVerifying(true);
     try {
-      // Simulate payment verification
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Save user data to localStorage (simulating backend)
+      const newUser = {
+        email: email.trim(),
+        transaction_id: transactionId.trim(),
+        is_paid: true,
+        guides_used: 3
+      };
+
+      // Get existing users or initialize empty array
+      const existingUsersData = localStorage.getItem('projectUsers');
+      const users = existingUsersData ? JSON.parse(existingUsersData) : { users: [] };
       
-      // Update user data
-      const userData = localStorage.getItem('aiProjectUser');
-      if (userData) {
-        const user = JSON.parse(userData);
-        const updatedUser = {
-          ...user,
-          transaction_id: transactionId,
-          is_paid: true
-        };
-        localStorage.setItem('aiProjectUser', JSON.stringify(updatedUser));
+      // Check if user already exists
+      const existingUserIndex = users.users.findIndex(user => user.email === newUser.email);
+      
+      if (existingUserIndex !== -1) {
+        // Update existing user
+        users.users[existingUserIndex] = newUser;
+      } else {
+        // Add new user
+        users.users.push(newUser);
       }
 
+      // Save back to localStorage
+      localStorage.setItem('projectUsers', JSON.stringify(users));
+      
+      // Also update the current user session
+      localStorage.setItem('aiProjectUser', JSON.stringify(newUser));
+
+      console.log('User saved successfully:', newUser);
       alert('Payment verified successfully! You now have Pro access.');
       navigate('/');
     } catch (error) {
@@ -151,7 +170,7 @@ const Subscribe = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Smartphone className="w-4 h-4 mr-2" />
-                  Open Google Pay
+                  Open Google Pay (₹99)
                 </Button>
                 
                 <div className="text-center text-gray-500">or</div>
@@ -188,16 +207,28 @@ const Subscribe = () => {
                   Verify Payment
                 </CardTitle>
                 <CardDescription>
-                  Enter your transaction ID after payment
+                  Enter your details after payment
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email Address:</label>
+                  <Input 
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Transaction ID:</label>
                   <Input 
                     placeholder="Enter UPI transaction ID"
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
+                    required
                   />
                   <p className="text-xs text-gray-500">
                     You'll receive this ID after successful payment
@@ -206,7 +237,7 @@ const Subscribe = () => {
                 
                 <Button 
                   onClick={handleVerifyPayment}
-                  disabled={!transactionId.trim() || isVerifying}
+                  disabled={!email.trim() || !transactionId.trim() || isVerifying}
                   className="w-full bg-green-600 hover:bg-green-700 text-white"
                 >
                   {isVerifying ? (
@@ -225,10 +256,10 @@ const Subscribe = () => {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">Payment Instructions:</h4>
                   <ol className="text-sm text-blue-800 space-y-1">
-                    <li>1. Click "Open Google Pay" or scan QR code</li>
-                    <li>2. Complete payment of ₹99</li>
-                    <li>3. Copy the transaction ID from payment confirmation</li>
-                    <li>4. Paste it above and click "Verify"</li>
+                    <li>1. Click "Open Google Pay" to pay ₹99</li>
+                    <li>2. Complete the UPI payment</li>
+                    <li>3. Enter your email and transaction ID above</li>
+                    <li>4. Click "Verify & Activate Pro"</li>
                   </ol>
                 </div>
               </CardContent>
@@ -242,6 +273,7 @@ const Subscribe = () => {
                 <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-600" />
                 <p className="font-medium">Secure Payment</p>
                 <p className="text-sm">Your payment is processed through India's secure UPI system</p>
+                <p className="text-xs text-gray-500 mt-2">UPI ID: {upiId}</p>
               </div>
             </CardContent>
           </Card>
