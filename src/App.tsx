@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import FlowGuide from "./pages/FlowGuide";
 import Subscribe from "./pages/Subscribe";
 import MvpGenerator from "./pages/MvpGenerator";
+import AdminPayments from "./pages/AdminPayments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/flow-guide" element={<FlowGuide />} />
           <Route path="/subscribe" element={<Subscribe />} />
           <Route path="/mvp-generator" element={<MvpGenerator />} />
+          <Route path="/admin/payments" element={<AdminPayments />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

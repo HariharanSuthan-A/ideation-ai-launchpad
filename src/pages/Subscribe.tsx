@@ -41,8 +41,10 @@ const Subscribe = () => {
       const newUser = {
         email: email.trim(),
         transaction_id: transactionId.trim(),
-        is_paid: true,
-        guides_used: 3
+        is_paid: false, // Changed to false by default, needs admin verification
+        guides_used: 3,
+        status: 'pending',
+        submitted_at: new Date().toISOString()
       };
 
       // Get existing users or initialize empty array
@@ -54,7 +56,7 @@ const Subscribe = () => {
       
       if (existingUserIndex !== -1) {
         // Update existing user
-        users.users[existingUserIndex] = newUser;
+        users.users[existingUserIndex] = { ...users.users[existingUserIndex], ...newUser };
       } else {
         // Add new user
         users.users.push(newUser);
@@ -63,15 +65,13 @@ const Subscribe = () => {
       // Save back to localStorage
       localStorage.setItem('projectUsers', JSON.stringify(users));
       
-      // Also update the current user session
-      localStorage.setItem('aiProjectUser', JSON.stringify(newUser));
-
-      console.log('User saved successfully:', newUser);
-      alert('Payment verified successfully! You now have Pro access.');
-      navigate('/');
+      console.log('Payment submission saved:', newUser);
+      alert('Payment submission received! Your payment will be verified within 24 hours.');
+      setEmail('');
+      setTransactionId('');
     } catch (error) {
-      console.error('Error verifying payment:', error);
-      alert('Payment verification failed. Please try again.');
+      console.error('Error submitting payment:', error);
+      alert('Payment submission failed. Please try again.');
     }
     setIsVerifying(false);
   };
@@ -191,10 +191,14 @@ const Subscribe = () => {
                 </div>
                 
                 <div className="text-center">
-                  <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto flex items-center justify-center">
-                    <span className="text-xs text-gray-500">QR Code<br/>Coming Soon</span>
+                  <div className="w-48 h-48 mx-auto border rounded-lg overflow-hidden">
+                    <img 
+                      src="/lovable-uploads/d096ca56-21e8-4e11-998f-7be41f1f0a70.png" 
+                      alt="Google Pay QR Code - Pay ₹99" 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Scan to pay ₹99</p>
+                  <p className="text-sm text-gray-600 mt-2 font-medium">Scan to pay ₹99</p>
                 </div>
               </CardContent>
             </Card>
@@ -204,7 +208,7 @@ const Subscribe = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <CreditCard className="w-5 h-5 mr-2 text-green-600" />
-                  Verify Payment
+                  Submit Payment Details
                 </CardTitle>
                 <CardDescription>
                   Enter your details after payment
@@ -243,12 +247,12 @@ const Subscribe = () => {
                   {isVerifying ? (
                     <>
                       <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Verifying...
+                      Submitting...
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Verify & Activate Pro
+                      Submit Payment Details
                     </>
                   )}
                 </Button>
@@ -256,10 +260,10 @@ const Subscribe = () => {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">Payment Instructions:</h4>
                   <ol className="text-sm text-blue-800 space-y-1">
-                    <li>1. Click "Open Google Pay" to pay ₹99</li>
-                    <li>2. Complete the UPI payment</li>
+                    <li>1. Scan QR code or click "Open Google Pay"</li>
+                    <li>2. Complete the UPI payment of ₹99</li>
                     <li>3. Enter your email and transaction ID above</li>
-                    <li>4. Click "Verify & Activate Pro"</li>
+                    <li>4. Wait for verification (within 24 hours)</li>
                   </ol>
                 </div>
               </CardContent>
