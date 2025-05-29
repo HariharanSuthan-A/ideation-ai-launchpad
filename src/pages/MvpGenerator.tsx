@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Crown, Rocket, Code, Database, Palette, Lock } from 'lucide-react';
 import { ideasService } from '../services/ideasService';
+import { useIsMobile } from '../hooks/use-mobile';
 
 const MvpGenerator = () => {
   const location = useLocation();
@@ -12,6 +14,7 @@ const MvpGenerator = () => {
   const [mvpPlan, setMvpPlan] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState(null);
+  const isMobile = useIsMobile();
 
   const { idea, ideaId, title } = location.state || {};
 
@@ -185,19 +188,19 @@ Frontend (React) ↔ REST API ↔ Database
 
   if (!user?.is_paid) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <Card className="max-w-md border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-0 shadow-xl bg-white/90 backdrop-blur-sm">
           <CardHeader className="text-center">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-white" />
             </div>
-            <CardTitle>Pro Feature</CardTitle>
+            <CardTitle className="text-lg md:text-xl">Pro Feature</CardTitle>
             <CardDescription>
               MVP Generator is available for Pro users only
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm md:text-base">
               Upgrade to Pro to access comprehensive MVP planning with tech stack recommendations and architecture guidance.
             </p>
             <div className="space-y-2">
@@ -231,17 +234,17 @@ Frontend (React) ↔ REST API ↔ Database
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => navigate('/')} className="flex items-center">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {isMobile ? 'Back' : 'Back to Home'}
             </Button>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
                 <Rocket className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                MVP Generator
+              <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                {isMobile ? 'MVP Generator' : 'MVP Generator'}
               </h1>
             </div>
-            <Badge className="bg-purple-100 text-purple-700">
+            <Badge className="bg-purple-100 text-purple-700 hidden sm:flex">
               <Crown className="w-3 h-3 mr-1" />
               Pro Feature
             </Badge>
@@ -249,35 +252,35 @@ Frontend (React) ↔ REST API ↔ Database
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 lg:py-8">
         <div className="max-w-4xl mx-auto">
           {/* Project Idea Recap */}
-          <Card className="mb-8 border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+          <Card className="mb-6 lg:mb-8 border-0 shadow-lg bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-lg md:text-xl">
                 <Rocket className="w-5 h-5 mr-2 text-purple-600" />
                 Project Idea
               </CardTitle>
             </CardHeader>
             <CardContent>
               {title && <h3 className="font-semibold text-lg mb-2 text-purple-900">{title}</h3>}
-              <p className="text-gray-700">{idea}</p>
+              <p className="text-gray-700 text-sm md:text-base">{idea}</p>
             </CardContent>
           </Card>
 
           {/* MVP Plan */}
           <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-lg md:text-xl">
                 {isGenerating ? (
                   <>
                     <div className="w-5 h-5 mr-2 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                    Generating MVP Plan...
+                    {isMobile ? 'Generating...' : 'Generating MVP Plan...'}
                   </>
                 ) : (
                   <>
                     <Code className="w-5 h-5 mr-2 text-purple-600" />
-                    MVP Development Plan
+                    {isMobile ? 'MVP Plan' : 'MVP Development Plan'}
                   </>
                 )}
               </CardTitle>
@@ -292,36 +295,38 @@ Frontend (React) ↔ REST API ↔ Database
                     <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Rocket className="w-6 h-6 text-white animate-bounce" />
                     </div>
-                    <p className="text-gray-600">AI is creating your comprehensive MVP blueprint...</p>
+                    <p className="text-gray-600 text-sm md:text-base">
+                      AI is creating your comprehensive MVP blueprint...
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div className="prose max-w-none">
-                  <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+                  <div className="whitespace-pre-line text-gray-700 leading-relaxed text-sm md:text-base">
                     {mvpPlan}
                   </div>
                   
                   {/* Feature Highlight Cards */}
-                  <div className="grid md:grid-cols-3 gap-4 mt-8 not-prose">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 not-prose">
                     <Card className="border-purple-200 bg-purple-50">
                       <CardContent className="pt-6 text-center">
-                        <Code className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                        <h3 className="font-semibold text-purple-900">Tech Stack</h3>
-                        <p className="text-sm text-purple-700">Curated technology recommendations</p>
+                        <Code className="w-6 md:w-8 h-6 md:h-8 text-purple-600 mx-auto mb-2" />
+                        <h3 className="font-semibold text-purple-900 text-sm md:text-base">Tech Stack</h3>
+                        <p className="text-xs md:text-sm text-purple-700">Curated technology recommendations</p>
                       </CardContent>
                     </Card>
                     <Card className="border-blue-200 bg-blue-50">
                       <CardContent className="pt-6 text-center">
-                        <Database className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                        <h3 className="font-semibold text-blue-900">Architecture</h3>
-                        <p className="text-sm text-blue-700">System design and database schema</p>
+                        <Database className="w-6 md:w-8 h-6 md:h-8 text-blue-600 mx-auto mb-2" />
+                        <h3 className="font-semibold text-blue-900 text-sm md:text-base">Architecture</h3>
+                        <p className="text-xs md:text-sm text-blue-700">System design and database schema</p>
                       </CardContent>
                     </Card>
                     <Card className="border-green-200 bg-green-50">
                       <CardContent className="pt-6 text-center">
-                        <Palette className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                        <h3 className="font-semibold text-green-900">UI/UX Guide</h3>
-                        <p className="text-sm text-green-700">Design principles and user flow</p>
+                        <Palette className="w-6 md:w-8 h-6 md:h-8 text-green-600 mx-auto mb-2" />
+                        <h3 className="font-semibold text-green-900 text-sm md:text-base">UI/UX Guide</h3>
+                        <p className="text-xs md:text-sm text-green-700">Design principles and user flow</p>
                       </CardContent>
                     </Card>
                   </div>

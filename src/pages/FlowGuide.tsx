@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, CheckCircle, Clock, Crown, Sparkles } from 'lucide-react';
 import { ideasService } from '../services/ideasService';
+import { useIsMobile } from '../hooks/use-mobile';
 
 const FlowGuide = () => {
   const location = useLocation();
@@ -13,6 +14,7 @@ const FlowGuide = () => {
   const [flowGuide, setFlowGuide] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState(null);
+  const isMobile = useIsMobile();
 
   const { idea, ideaId, dept, category, title, technologies } = location.state || {};
 
@@ -129,18 +131,18 @@ const FlowGuide = () => {
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => navigate('/')} className="flex items-center">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Generator
+              {isMobile ? 'Back' : 'Back to Generator'}
             </Button>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Development Guide
+              <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                {isMobile ? 'Dev Guide' : 'Development Guide'}
               </h1>
             </div>
             {user && (
-              <Badge variant={user.is_paid ? "default" : "secondary"}>
+              <Badge variant={user.is_paid ? "default" : "secondary"} className="hidden sm:flex">
                 {user.is_paid ? (
                   <>
                     <Crown className="w-3 h-3 mr-1" />
@@ -155,12 +157,12 @@ const FlowGuide = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 lg:py-8">
         <div className="max-w-4xl mx-auto">
           {/* Project Idea Recap */}
-          <Card className="mb-8 border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+          <Card className="mb-6 lg:mb-8 border-0 shadow-lg bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-lg md:text-xl">
                 <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
                 Your Project Idea
               </CardTitle>
@@ -171,11 +173,16 @@ const FlowGuide = () => {
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">{dept}</Badge>
                 <Badge variant="outline">{category}</Badge>
-                {technologies && technologies.map((tech, index) => (
+                {technologies && technologies.slice(0, isMobile ? 3 : 5).map((tech, index) => (
                   <Badge key={index} variant="outline" className="bg-blue-100 text-blue-700">
                     {tech}
                   </Badge>
                 ))}
+                {technologies && technologies.length > (isMobile ? 3 : 5) && (
+                  <Badge variant="outline" className="bg-gray-100 text-gray-700">
+                    +{technologies.length - (isMobile ? 3 : 5)} more
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -183,16 +190,16 @@ const FlowGuide = () => {
           {/* Flow Guide */}
           <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-lg md:text-xl">
                 {isGenerating ? (
                   <>
                     <Clock className="w-5 h-5 mr-2 animate-spin" />
-                    Generating Development Roadmap...
+                    {isMobile ? 'Generating...' : 'Generating Development Roadmap...'}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5 mr-2 text-purple-600" />
-                    Development Roadmap
+                    {isMobile ? 'Roadmap' : 'Development Roadmap'}
                   </>
                 )}
               </CardTitle>
@@ -207,15 +214,17 @@ const FlowGuide = () => {
                     <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Sparkles className="w-6 h-6 text-white animate-spin" />
                     </div>
-                    <p className="text-gray-600">AI is crafting your personalized development roadmap...</p>
+                    <p className="text-gray-600 text-sm md:text-base">
+                      AI is crafting your personalized development roadmap...
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div className="prose max-w-none">
-                  <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+                  <div className="whitespace-pre-line text-gray-700 leading-relaxed text-sm md:text-base">
                     {flowGuide}
                   </div>
-                  <div className="mt-8 flex space-x-4">
+                  <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <Button 
                       onClick={() => navigate('/mvp-generator', { 
                         state: { 
@@ -225,10 +234,10 @@ const FlowGuide = () => {
                         } 
                       })}
                       disabled={!user?.is_paid}
-                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center justify-center"
                     >
                       <Crown className="w-4 h-4 mr-2" />
-                      Generate MVP Plan {!user?.is_paid && '(Upgrade Required)'}
+                      {isMobile ? 'MVP Plan' : 'Generate MVP Plan'} {!user?.is_paid && '(Upgrade Required)'}
                     </Button>
                     {!user?.is_paid && user?.guides_used >= 3 && (
                       <Button variant="outline" onClick={() => navigate('/subscribe')}>
@@ -247,16 +256,16 @@ const FlowGuide = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-2 text-orange-700">
                   <Clock className="w-5 h-5" />
-                  <span className="font-medium">
+                  <span className="font-medium text-sm md:text-base">
                     {user.guides_used === 2 ? 'This is your last free guide!' : 'You\'ve used all free guides!'}
                   </span>
                 </div>
-                <p className="text-orange-600 mt-2">
+                <p className="text-orange-600 mt-2 text-sm md:text-base">
                   Upgrade to Pro for unlimited guides and MVP generation.
                 </p>
                 <Button 
                   variant="outline" 
-                  className="mt-3 border-orange-300 text-orange-700 hover:bg-orange-100"
+                  className="mt-3 border-orange-300 text-orange-700 hover:bg-orange-100 w-full sm:w-auto"
                   onClick={() => navigate('/subscribe')}
                 >
                   Upgrade Now - ₹99 only

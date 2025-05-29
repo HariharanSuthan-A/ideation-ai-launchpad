@@ -1,4 +1,3 @@
-
 import ideasDatabase from '../data/ideas.json';
 
 export interface ProjectIdea {
@@ -14,7 +13,12 @@ export interface ProjectIdea {
 }
 
 export class IdeasService {
-  private ideas: Record<string, ProjectIdea[]> = ideasDatabase;
+  private ideas: Record<string, ProjectIdea[]>;
+
+  constructor() {
+    // Type assertion to properly cast the imported JSON data
+    this.ideas = ideasDatabase as Record<string, ProjectIdea[]>;
+  }
 
   // Get ideas by department and category
   getIdeasByDepartmentAndCategory(department: string, category: string): ProjectIdea[] {
